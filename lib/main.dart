@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:serialbench/screens/serial_monitor.dart';
+import 'package:serialbench/screens/serial_plotter.dart';
+import 'package:serialbench/screens/settings.dart';
+import 'package:serialbench/screens/usage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,13 +35,58 @@ class HomeShell extends StatefulWidget {
   State<HomeShell> createState() => HomeShellState();
 }
 
-enum ScreenSelection { monitor, plotter, controller, audio, settings, usage }
+enum ScreenSelection { monitor, plotter, settings, usage }
 
 class HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
+  ScreenSelection currScreen = ScreenSelection.settings;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    WidgetsBinding.instance.removeObserver(this);
+  }
+
+  String get appBarTitle {
+    switch (currScreen) {
+      case ScreenSelection.monitor:
+        return 'Serial Monitor';
+      case ScreenSelection.plotter:
+        return 'Serial Plotter';
+      case ScreenSelection.settings:
+        return 'Settings';
+      case ScreenSelection.usage:
+        return 'Usage Guide';
+    }
+  }
+
+  Widget screenBody() {
+    switch (currScreen) {
+      case ScreenSelection.monitor:
+        return const SerialMonitor();
+      case ScreenSelection.plotter:
+        return const SerialPlotter();
+      case ScreenSelection.settings:
+        return const Settings();
+      case ScreenSelection.usage:
+        return const Usage();
+    }
+  }
+
+  void selectScreen(ScreenSelection selection, {bool closeDrawer = true}) {
+    setState(() => currScreen = selection);
+    if (closeDrawer) Navigator.pop(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('SerialBench')),
+      appBar: AppBar(title: Text(appBarTitle)),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -55,13 +104,31 @@ class HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
                 ),
               ),
             ),
-            ListTile(leading: const Icon(Icons.terminal_rounded), title: const Text('Serial Monitor')),
-            ListTile(leading: const Icon(Icons.insert_chart_rounded), title: const Text('Serial Plotter')),
-            // ListTile(leading: const Icon(Icons.gamepad_rounded), title: const Text('Serial Controller')),
-            // ListTile(leading: const Icon(Icons.graphic_eq_rounded), title: const Text('Serial Audio')),
+            ListTile(
+              leading: const Icon(Icons.terminal_rounded),
+              title: const Text('Serial Monitor'),
+              selected: currScreen == ScreenSelection.monitor,
+              onTap: () => selectScreen(ScreenSelection.monitor),
+            ),
+            ListTile(
+              leading: const Icon(Icons.insert_chart_rounded),
+              title: const Text('Serial Plotter'),
+              selected: currScreen == ScreenSelection.plotter,
+              onTap: () => selectScreen(ScreenSelection.plotter),
+            ),
             const Divider(),
-            ListTile(leading: const Icon(Icons.settings_rounded), title: const Text('Settings')),
-            ListTile(leading: const Icon(Icons.help_rounded), title: const Text('Usage')),
+            ListTile(
+              leading: const Icon(Icons.settings_rounded),
+              title: const Text('Settings'),
+              selected: currScreen == ScreenSelection.settings,
+              onTap: () => selectScreen(ScreenSelection.settings),
+            ),
+            ListTile(
+              leading: const Icon(Icons.help_rounded),
+              title: const Text('Usage'),
+              selected: currScreen == ScreenSelection.usage,
+              onTap: () => selectScreen(ScreenSelection.usage),
+            ),
             ListTile(
               leading: const Icon(Icons.code_rounded),
               title: const Text('Repository'),
@@ -77,6 +144,7 @@ class HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
           ],
         ),
       ),
+      body: screenBody(),
     );
   }
 }
