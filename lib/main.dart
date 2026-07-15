@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:serialbench/core/serial_service.dart';
 import 'package:serialbench/screens/serial_monitor.dart';
 import 'package:serialbench/screens/serial_plotter.dart';
 import 'package:serialbench/screens/settings.dart';
@@ -39,17 +41,32 @@ enum ScreenSelection { monitor, plotter, settings, usage }
 
 class HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   ScreenSelection currScreen = ScreenSelection.settings;
+  bool connected = false;
+  StreamSubscription<String>? statusSub;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    connected = SerialService.instance.isConnected;
+    statusSub = SerialService.instance.status.listen((_) {
+      if (!mounted) return;
+      setState(() => connected = SerialService.instance.isConnected);
+    });
   }
 
   @override
   void dispose() {
     super.dispose();
     WidgetsBinding.instance.removeObserver(this);
+    statusSub?.cancel();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.detached) {
+      SerialService.instance.disconnect();
+    }
   }
 
   String get appBarTitle {
@@ -86,7 +103,17 @@ class HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(appBarTitle)),
+      appBar: AppBar(
+        title: Text(appBarTitle),
+        actions: [
+          Text(connected ? 'Connected' : 'Not connected', style: TextStyle(fontSize: 11)),
+          IconButton(
+            onPressed: () => selectScreen(ScreenSelection.settings, closeDrawer: false),
+            icon: Icon(Icons.circle, size: 14, color: connected ? Colors.greenAccent : Colors.redAccent),
+          ),
+          const SizedBox(width: 4),
+        ],
+      ),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
