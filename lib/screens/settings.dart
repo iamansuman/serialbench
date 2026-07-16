@@ -23,6 +23,7 @@ class _SettingsState extends State<Settings> {
   UsbDevice? selectedDevice;
   String status = 'Not connected';
   StreamSubscription<String>? statusSub;
+  StreamSubscription<void>? deviceListSub;
 
   @override
   void initState() {
@@ -32,6 +33,9 @@ class _SettingsState extends State<Settings> {
     statusSub = serial.status.listen((s) {
       if (!mounted) return;
       setState(() => status = s);
+    });
+    deviceListSub = serial.deviceListChanged.listen((_) {
+      refreshDevices();
     });
   }
 

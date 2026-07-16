@@ -1,24 +1,43 @@
 import 'dart:async';
 import 'dart:typed_data';
+import 'package:flutter/material.dart';
 import 'package:usb_serial/usb_serial.dart';
 import 'package:usb_serial/transaction.dart';
 
 class SerialService {
-  SerialService._internal();
+  SerialService._internal() {
+    listenForUsbEvents();
+  }
   static final SerialService instance = SerialService._internal();
 
   UsbPort? port;
+  UsbDevice? activeDevice;
+
+  StreamSubscription<UsbEvent>? usbEventSub;
   StreamSubscription<String>? lineSub;
   Transaction<String>? lineTransaction;
 
   final statusController = StreamController<String>.broadcast();
+  final deviceListController = StreamController<void>.broadcast();
   final lineController = StreamController<String>.broadcast();
 
   Stream<String> get status => statusController.stream;
+  Stream<void> get deviceListChanged => deviceListController.stream;
   Stream<String> get lines => lineController.stream;
 
-  bool get isConnected => port != null;
+  final ValueNotifier<bool> connectedNotifier = ValueNotifier(false);
+  void syncConnected() => connectedNotifier.value = (port != null);
+  bool get isConnected => connectedNotifier.value;
   int baudRate = 115200;
+
+  void listenForUsbEvents() {
+    usbEventSub = UsbSerial.usbEventStream?.listen((event) {
+      deviceListController.add(null);
+      if (event.event == UsbEvent.ACTION_USB_DETACHED && activeDevice != null && event.device?.deviceId == activeDevice?.deviceId) {
+        disconnect();
+      }
+    });
+  }
 
   Future<List<UsbDevice>> listDevices() => UsbSerial.listDevices();
 
@@ -28,6 +47,7 @@ class SerialService {
     port = await device.create();
     if (port == null) {
       statusController.add('Failed to create port');
+      syncConnected();
       return false;
     }
 
@@ -35,8 +55,12 @@ class SerialService {
     if (!opened) {
       statusController.add('Failed to open port (check permissions)');
       port = null;
+      syncConnected();
       return false;
     }
+
+    activeDevice = device;
+    syncConnected();
 
     await port!.setDTR(true);
     await port!.setRTS(true);
@@ -67,13 +91,18 @@ class SerialService {
     await port?.close();
     await lineSub?.cancel();
     port = null;
+    activeDevice = null;
     statusController.add('Disconnected');
+    syncConnected();
   }
 
   void dispose() {
     port?.close();
     lineSub?.cancel();
+    usbEventSub?.cancel();
     statusController.close();
+    connectedNotifier.dispose();
+    deviceListController.close();
     lineController.close();
   }
 }
