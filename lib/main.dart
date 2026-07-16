@@ -106,10 +106,10 @@ class HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
       appBar: AppBar(
         title: Text(appBarTitle),
         actions: [
-          Text(connected ? 'Connected' : 'Not connected', style: TextStyle(fontSize: 11)),
           IconButton(
+            style: IconButton.styleFrom(backgroundColor: connected ? Colors.greenAccent : Colors.redAccent),
             onPressed: () => selectScreen(ScreenSelection.settings, closeDrawer: false),
-            icon: Icon(Icons.circle, size: 14, color: connected ? Colors.greenAccent : Colors.redAccent),
+            icon: Icon(connected ? Icons.usb_rounded : Icons.usb_off_rounded, color: Color(0xFF212121)),
           ),
           const SizedBox(width: 4),
         ],
