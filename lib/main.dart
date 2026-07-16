@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:serialbench/core/serial_service.dart';
+import 'package:serialbench/screens/screens.dart';
 import 'package:serialbench/screens/serial_monitor.dart';
 import 'package:serialbench/screens/serial_plotter.dart';
 import 'package:serialbench/screens/settings.dart';
@@ -11,12 +12,13 @@ import 'package:serialbench/screens/usage.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  runApp(SerialBenchApp(themeMode: prefs.getInt('theme_mode') ?? 0));
+  runApp(SerialBenchApp(themeMode: prefs.getInt('theme_mode') ?? 0, launchScreenName: prefs.getString('launch_screen') ?? 'settings'));
 }
 
 class SerialBenchApp extends StatelessWidget {
+  final String launchScreenName;
   final int themeMode;
-  const SerialBenchApp({super.key, this.themeMode = 0});
+  const SerialBenchApp({super.key, this.themeMode = 0, this.launchScreenName = 'settings'});
 
   @override
   Widget build(BuildContext context) {
@@ -25,19 +27,18 @@ class SerialBenchApp extends StatelessWidget {
       theme: ThemeData(colorSchemeSeed: Colors.teal, brightness: Brightness.light, useMaterial3: true),
       darkTheme: ThemeData(colorSchemeSeed: Colors.teal, brightness: Brightness.dark, useMaterial3: true),
       themeMode: ThemeMode.values[themeMode], //System[0], Light[1], Dark[2]
-      home: const HomeShell(),
+      home: HomeShell(launchScreen: ScreenSelection.values.byName(launchScreenName)),
     );
   }
 }
 
 class HomeShell extends StatefulWidget {
-  const HomeShell({super.key});
+  final ScreenSelection launchScreen;
+  const HomeShell({super.key, this.launchScreen = ScreenSelection.settings});
 
   @override
   State<HomeShell> createState() => HomeShellState();
 }
-
-enum ScreenSelection { monitor, plotter, settings, usage }
 
 class HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   ScreenSelection currScreen = ScreenSelection.settings;
@@ -48,6 +49,7 @@ class HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    currScreen = widget.launchScreen;
     connected = SerialService.instance.isConnected;
     statusSub = SerialService.instance.status.listen((_) {
       if (!mounted) return;

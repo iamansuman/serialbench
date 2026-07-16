@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:usb_serial/usb_serial.dart';
 import 'package:serialbench/core/serial_service.dart';
+import 'package:serialbench/screens/screens.dart';
 
 class Settings extends StatefulWidget {
   const Settings({super.key});
@@ -17,6 +18,7 @@ class _SettingsState extends State<Settings> {
 
   int? currThemeMode;
   int? initialThemeMode;
+  String? currLaunchScreen;
   static const List<int> baudOptions = [9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600];
 
   final serial = SerialService.instance;
@@ -53,6 +55,7 @@ class _SettingsState extends State<Settings> {
     setState(() {
       initialThemeMode = currThemeMode = prefs.getInt('theme_mode') ?? 0;
       selectedBaud = prefs.getInt('baudrate') ?? serial.baudRate;
+      currLaunchScreen = prefs.getString('launch_screen') ?? 'settings';
     });
   }
 
@@ -101,6 +104,23 @@ class _SettingsState extends State<Settings> {
             await prefs.setInt('theme_mode', thVal ?? 0);
             setState(() {
               currThemeMode = thVal;
+            });
+          },
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [const Text('Launch Screen', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))],
+        ),
+        DropdownButton<String>(
+          isExpanded: true,
+          items: ScreenSelection.values
+              .map((ssVal) => DropdownMenuItem<String>(value: ssVal.name, child: Text('${ssVal.name[0].toUpperCase()}${ssVal.name.substring(1)}')))
+              .toList(),
+          value: currLaunchScreen,
+          onChanged: (String? ssVal) async {
+            await prefs.setString('launch_screen', ssVal ?? 'settings');
+            setState(() {
+              currLaunchScreen = ssVal;
             });
           },
         ),

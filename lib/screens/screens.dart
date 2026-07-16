@@ -1,0 +1,1 @@
+enum ScreenSelection { monitor, plotter, settings, usage }
