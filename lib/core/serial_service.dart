@@ -4,8 +4,8 @@ import 'package:usb_serial/usb_serial.dart';
 import 'package:usb_serial/transaction.dart';
 
 class SerialService {
-  SerialService.internal();
-  static final SerialService instance = SerialService.internal();
+  SerialService._internal();
+  static final SerialService instance = SerialService._internal();
 
   UsbPort? port;
   StreamSubscription<String>? lineSub;
