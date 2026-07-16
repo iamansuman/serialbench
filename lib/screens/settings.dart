@@ -99,36 +99,32 @@ class _SettingsState extends State<Settings> {
             IconButton(icon: const Icon(Icons.refresh), onPressed: connected ? null : refreshDevices),
           ],
         ),
-        const SizedBox(height: 8),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            ElevatedButton(onPressed: !connected ? connect : null, child: const Text('Connect')),
-            ElevatedButton(onPressed: connected ? disconnect : null, child: const Text('Disconnect')),
+            Expanded(
+              child: DropdownButton<int>(
+                value: selectedBaud,
+                isExpanded: true,
+                items: baudOptions.map((b) => DropdownMenuItem(alignment: Alignment.center, value: b, child: Text('$b'))).toList(),
+                onChanged: connected
+                    ? null
+                    : (b) {
+                        if (b == null) return;
+                        setState(() {
+                          selectedBaud = b;
+                          prefs.setInt('baudrate', b);
+                        });
+                        serial.baudRate = b;
+                      },
+              ),
+            ),
+            SizedBox(width: 8),
+            ElevatedButton(
+              onPressed: !connected ? (devices.isNotEmpty ? connect : null) : disconnect,
+              child: !connected ? const Text('Connect') : const Text('Disconnect'),
+            ),
           ],
-        ),
-        const Divider(height: 32),
-        const Text('Baud Rate', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 4),
-        Text(
-          connected ? 'Disconnect before changing baud rate.' : 'Applies the next time you connect.',
-          style: TextStyle(color: Colors.grey[600], fontSize: 13),
-        ),
-        const SizedBox(height: 12),
-        DropdownButton<int>(
-          value: selectedBaud,
-          isExpanded: true,
-          items: baudOptions.map((b) => DropdownMenuItem(value: b, child: Text('$b'))).toList(),
-          onChanged: connected
-              ? null
-              : (b) {
-                  if (b == null) return;
-                  setState(() {
-                    selectedBaud = b;
-                    prefs.setInt('baudrate', b);
-                  });
-                  serial.baudRate = b;
-                },
         ),
       ],
     );
