@@ -13,8 +13,11 @@ class Settings extends StatefulWidget {
 }
 
 class _SettingsState extends State<Settings> {
-  static const List<int> baudOptions = [9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600];
   late final SharedPreferences prefs;
+
+  int? currThemeMode;
+  int? initialThemeMode;
+  static const List<int> baudOptions = [9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600];
 
   final serial = SerialService.instance;
   late int selectedBaud = serial.baudRate;
@@ -48,6 +51,7 @@ class _SettingsState extends State<Settings> {
   Future<void> initPrefs() async {
     prefs = await SharedPreferences.getInstance();
     setState(() {
+      initialThemeMode = currThemeMode = prefs.getInt('theme_mode') ?? 0;
       selectedBaud = prefs.getInt('baudrate') ?? serial.baudRate;
     });
   }
@@ -80,12 +84,34 @@ class _SettingsState extends State<Settings> {
       children: [
         Row(
           children: [
+            const Text('Theme', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            Text(
+              (initialThemeMode != currThemeMode) ? ' (Relaunch app to view changes)' : '',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal),
+            ),
+          ],
+        ),
+        DropdownButton<int>(
+          isExpanded: true,
+          items: ThemeMode.values
+              .map((thVal) => DropdownMenuItem<int>(value: thVal.index, child: Text('${thVal.name[0].toUpperCase()}${thVal.name.substring(1)}')))
+              .toList(),
+          value: currThemeMode,
+          onChanged: (int? thVal) async {
+            await prefs.setInt('theme_mode', thVal ?? 0);
+            setState(() {
+              currThemeMode = thVal;
+            });
+          },
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
             const Text('Connection [', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             Text(status, overflow: TextOverflow.ellipsis),
             const Text(']', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           ],
         ),
-        const SizedBox(height: 8),
         Row(
           children: [
             Expanded(

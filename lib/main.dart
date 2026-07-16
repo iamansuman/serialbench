@@ -11,12 +11,12 @@ import 'package:serialbench/screens/usage.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  runApp(SerialBenchApp(themeMode: prefs.getInt('theme_mode') ?? 2));
+  runApp(SerialBenchApp(themeMode: prefs.getInt('theme_mode') ?? 0));
 }
 
 class SerialBenchApp extends StatelessWidget {
   final int themeMode;
-  const SerialBenchApp({super.key, this.themeMode = 2});
+  const SerialBenchApp({super.key, this.themeMode = 0});
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +24,7 @@ class SerialBenchApp extends StatelessWidget {
       title: 'SerialBench',
       theme: ThemeData(colorSchemeSeed: Colors.teal, brightness: Brightness.light, useMaterial3: true),
       darkTheme: ThemeData(colorSchemeSeed: Colors.teal, brightness: Brightness.dark, useMaterial3: true),
-      themeMode: ThemeMode.values[themeMode], //Dark[0], Light[1], System[2]
+      themeMode: ThemeMode.values[themeMode], //System[0], Light[1], Dark[2]
       home: const HomeShell(),
     );
   }
