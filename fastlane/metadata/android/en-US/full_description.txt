@@ -1,0 +1,24 @@
+SerialBench is a general-purpose serial communication tool for Android,
+built for makers, embedded developers, and hobbyists working with
+USB-connected microcontrollers and devices.
+
+Connect over USB OTG to any serial device - Arduino, ESP8266, ESP32,
+and other microcontrollers - and send or receive data directly from
+your Android device. Whether you're debugging firmware, testing a
+communication protocol, or just watching raw output from a board,
+SerialBench gives you a straightforward way to talk to your hardware
+on the go.
+
+Features:
+
+* USB OTG serial connection to a wide range of devices
+* Send and receive data over serial
+* Live serial terminal for raw text output
+* Live plotter view for visualizing numeric data in real time
+* Configurable baud rate and connection settings
+* Simple, no-frills interface built for development workflows
+* No cloud services, no tracking - everything runs on-device
+
+SerialBench is meant to be a pocket-sized alternative to a desktop
+serial terminal, useful anywhere you need to interact with a
+microcontroller without carrying a laptop.

@@ -1,0 +1,7 @@
+Initial release of SerialBench.
+
+- Connect to serial devices over USB OTG
+- Send and receive data over a serial connection
+- Live serial terminal and plotter views
+- Configurable baud rate and connection settings
+- No cloud, no tracking — everything runs on-device
