@@ -26,8 +26,6 @@ class _SettingsState extends State<Settings> {
 
   List<UsbDevice> devices = [];
   UsbDevice? selectedDevice;
-  String status = 'Not connected';
-  StreamSubscription<String>? statusSub;
   StreamSubscription<void>? deviceListSub;
 
   @override
@@ -35,10 +33,6 @@ class _SettingsState extends State<Settings> {
     super.initState();
     initPrefs();
     refreshDevices();
-    statusSub = serial.status.listen((s) {
-      if (!mounted) return;
-      setState(() => status = s);
-    });
     deviceListSub = serial.deviceListChanged.listen((_) {
       refreshDevices();
     });
@@ -46,7 +40,7 @@ class _SettingsState extends State<Settings> {
 
   @override
   void dispose() {
-    statusSub?.cancel();
+    deviceListSub?.cancel();
     super.dispose();
   }
 
@@ -81,102 +75,104 @@ class _SettingsState extends State<Settings> {
 
   @override
   Widget build(BuildContext context) {
-    final connected = serial.isConnected;
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        Row(
-          children: [
-            const Text('Theme', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            Text(
-              (initialThemeMode != currThemeMode) ? ' (Relaunch app to view changes)' : '',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal),
-            ),
-          ],
-        ),
-        DropdownButton<int>(
-          isExpanded: true,
-          items: ThemeMode.values
-              .map((thVal) => DropdownMenuItem<int>(value: thVal.index, child: Text('${thVal.name[0].toUpperCase()}${thVal.name.substring(1)}')))
-              .toList(),
-          value: currThemeMode,
-          onChanged: (int? thVal) async {
-            await prefs.setInt('theme_mode', thVal ?? 0);
-            setState(() {
-              currThemeMode = thVal;
-            });
-          },
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: [const Text('Launch Screen', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))],
-        ),
-        DropdownButton<String>(
-          isExpanded: true,
-          items: ScreenSelection.values
-              .map((ssVal) => DropdownMenuItem<String>(value: ssVal.name, child: Text('${ssVal.name[0].toUpperCase()}${ssVal.name.substring(1)}')))
-              .toList(),
-          value: currLaunchScreen,
-          onChanged: (String? ssVal) async {
-            await prefs.setString('launch_screen', ssVal ?? 'settings');
-            setState(() {
-              currLaunchScreen = ssVal;
-            });
-          },
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            const Text('Connection [', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            Text(status, overflow: TextOverflow.ellipsis),
-            const Text(']', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-          ],
-        ),
-        Row(
-          children: [
-            Expanded(
-              child: DropdownButton<UsbDevice>(
-                isExpanded: true,
-                itemHeight: max(kMinInteractiveDimension, 75),
-                value: selectedDevice,
-                hint: const Text('Select USB device'),
-                items: devices
-                    .map((d) => DropdownMenuItem(value: d, child: Text('${d.productName ?? "Unknown"} (VID:${d.vid} PID:${d.pid})')))
-                    .toList(),
-                onChanged: connected ? null : (d) => setState(() => selectedDevice = d),
+    return ValueListenableBuilder<bool>(
+      valueListenable: serial.connectedNotifier,
+      builder: (context, connected, _) => ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Row(
+            children: [
+              const Text('Theme', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              Text(
+                (initialThemeMode != currThemeMode) ? ' (Relaunch app to view changes)' : '',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal),
               ),
-            ),
-            IconButton(icon: const Icon(Icons.refresh), onPressed: connected ? null : refreshDevices),
-          ],
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            Expanded(
-              child: DropdownButton<int>(
-                value: selectedBaud,
-                isExpanded: true,
-                items: baudOptions.map((b) => DropdownMenuItem(alignment: Alignment.center, value: b, child: Text('$b'))).toList(),
-                onChanged: connected
-                    ? null
-                    : (b) {
-                        if (b == null) return;
-                        setState(() {
-                          selectedBaud = b;
-                          prefs.setInt('baudrate', b);
-                        });
-                        serial.baudRate = b;
-                      },
+            ],
+          ),
+          DropdownButton<int>(
+            isExpanded: true,
+            items: ThemeMode.values
+                .map((thVal) => DropdownMenuItem<int>(value: thVal.index, child: Text('${thVal.name[0].toUpperCase()}${thVal.name.substring(1)}')))
+                .toList(),
+            value: currThemeMode,
+            onChanged: (int? thVal) async {
+              await prefs.setInt('theme_mode', thVal ?? 0);
+              setState(() {
+                currThemeMode = thVal;
+              });
+            },
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [const Text('Launch Screen', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))],
+          ),
+          DropdownButton<String>(
+            isExpanded: true,
+            items: ScreenSelection.values
+                .map((ssVal) => DropdownMenuItem<String>(value: ssVal.name, child: Text('${ssVal.name[0].toUpperCase()}${ssVal.name.substring(1)}')))
+                .toList(),
+            value: currLaunchScreen,
+            onChanged: (String? ssVal) async {
+              await prefs.setString('launch_screen', ssVal ?? 'settings');
+              setState(() {
+                currLaunchScreen = ssVal;
+              });
+            },
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              const Text('Connection [', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              Text(connected ? 'Connected at ${serial.baudRate} baud' : 'Not connected', overflow: TextOverflow.ellipsis),
+              const Text(']', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          Row(
+            children: [
+              Expanded(
+                child: DropdownButton<UsbDevice>(
+                  isExpanded: true,
+                  itemHeight: max(kMinInteractiveDimension, 75),
+                  value: selectedDevice,
+                  hint: const Text('Select USB device'),
+                  items: devices
+                      .map((d) => DropdownMenuItem(value: d, child: Text('${d.productName ?? "Unknown"} (VID:${d.vid} PID:${d.pid})')))
+                      .toList(),
+                  onChanged: connected ? null : (d) => setState(() => selectedDevice = d),
+                ),
               ),
-            ),
-            SizedBox(width: 8),
-            ElevatedButton(
-              onPressed: !connected ? (devices.isNotEmpty ? connect : null) : disconnect,
-              child: !connected ? const Text('Connect') : const Text('Disconnect'),
-            ),
-          ],
-        ),
-      ],
+              IconButton(icon: const Icon(Icons.refresh), onPressed: connected ? null : refreshDevices),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Expanded(
+                child: DropdownButton<int>(
+                  value: selectedBaud,
+                  isExpanded: true,
+                  items: baudOptions.map((b) => DropdownMenuItem(alignment: Alignment.center, value: b, child: Text('$b'))).toList(),
+                  onChanged: connected
+                      ? null
+                      : (b) {
+                          if (b == null) return;
+                          setState(() {
+                            selectedBaud = b;
+                            prefs.setInt('baudrate', b);
+                          });
+                          serial.baudRate = b;
+                        },
+                ),
+              ),
+              SizedBox(width: 8),
+              ElevatedButton(
+                onPressed: !connected ? (devices.isNotEmpty ? connect : null) : disconnect,
+                child: !connected ? const Text('Connect') : const Text('Disconnect'),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
