@@ -33,13 +33,22 @@ class Usage extends StatelessWidget {
         section(
           title: 'Baud Rate',
           body:
-              'Set this in Settings before connecting. It must match the baud rate configured in your microcontroller firmware or you will see garbled data.',
+              "Set this in Settings before connecting. "
+              "It must match the baud rate configured in your microcontroller firmware or you will see garbled data.",
+        ),
+        section(
+          title: 'Status Indicator',
+          body:
+              "The top-right USB icon (in the AppBar) is the status indicator\n"
+              "🟢 -> Device connected\n"
+              "🔴 -> Device disconnected / unavailable\n"
+              "Tapping it connects or disconnects if a USB device (microcontroller) is available. If no device is available, it opens Settings instead.",
         ),
         section(
           title: 'Serial Monitor',
           body:
-              'Shows raw text lines coming from your device.'
-              'Useful for debugging and reading log output.',
+              "Shows raw text lines coming from your device."
+              "Useful for debugging and reading log output.",
         ),
         section(title: 'Serial Plotter', body: 'Plots numeric values sent one per line on a live scrolling chart.'),
       ],

@@ -110,7 +110,19 @@ class HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
         actions: [
           IconButton(
             style: IconButton.styleFrom(backgroundColor: connected ? Colors.greenAccent : Colors.redAccent),
-            onPressed: () => selectScreen(ScreenSelection.settings, closeDrawer: false),
+            onPressed: () async {
+              final inst = SerialService.instance;
+              if (connected) {
+                await inst.disconnect();
+                return;
+              }
+              final devices = await inst.listDevices();
+              if (devices.isEmpty) {
+                selectScreen(ScreenSelection.settings, closeDrawer: false);
+                return;
+              }
+              await inst.connect(devices.first);
+            },
             icon: Icon(connected ? Icons.usb_rounded : Icons.usb_off_rounded, color: Color(0xFF212121)),
           ),
           const SizedBox(width: 4),
