@@ -12,13 +12,13 @@ import 'package:serialbench/screens/usage.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  runApp(SerialBenchApp(themeMode: prefs.getInt('theme_mode') ?? 0, launchScreenName: prefs.getString('launch_screen') ?? 'settings'));
+  runApp(SerialBenchApp(themeMode: prefs.getInt('theme_mode') ?? 0, launchScreenName: prefs.getString('launch_screen') ?? 'usage'));
 }
 
 class SerialBenchApp extends StatelessWidget {
   final String launchScreenName;
   final int themeMode;
-  const SerialBenchApp({super.key, this.themeMode = 0, this.launchScreenName = 'settings'});
+  const SerialBenchApp({super.key, this.themeMode = 0, this.launchScreenName = 'usage'});
 
   @override
   Widget build(BuildContext context) {
