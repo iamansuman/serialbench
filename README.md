@@ -13,6 +13,12 @@ SerialBench is an Android app for working with serial (UART) devices over USB OT
 - **Audio over Serial** *(planned)* - stream audio in/out over a serial link, built for low-bandwidth microcontroller-to-microcontroller audio relay projects.
 - **More serial tools** *(planned)* - additional utilities as the app grows.
 
+## Build
+
+Set the environment variables `KEYSTORE_PATH`, `KEY_ALIAS`, `KEY_PASSWORD` `KEYSTORE_PASSWORD`
+
+> make build
+
 ## License
 
 TBD
