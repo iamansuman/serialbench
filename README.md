@@ -21,4 +21,4 @@ Set the environment variables `KEYSTORE_PATH`, `KEY_ALIAS`, `KEY_PASSWORD` `KEYS
 
 ## License
 
-TBD
+GNU GPL v3 license
