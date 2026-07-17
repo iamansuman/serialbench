@@ -8,16 +8,43 @@ SerialBench is an Android app for working with serial (UART) devices over USB OT
 
 ## Features
 
-- **Serial Monitor** - view raw incoming serial data in real time, similar to the Arduino IDE's Serial Monitor.
-- **Serial Plotter** - plot numeric serial data live on a scrolling graph, similar to the Arduino IDE's Serial Plotter.
+- **Serial Monitor** - view raw incoming serial data in real time.
+- **Serial Plotter** - plot numeric serial data live on a scrolling graph.
 - **Audio over Serial** *(planned)* - stream audio in/out over a serial link, built for low-bandwidth microcontroller-to-microcontroller audio relay projects.
 - **More serial tools** *(planned)* - additional utilities as the app grows.
 
 ## Build
 
-Set the environment variables `KEYSTORE_PATH`, `KEY_ALIAS`, `KEY_PASSWORD` `KEYSTORE_PASSWORD`
+Built and Tested on Dart SDK 3.12.2 and Flutter 3.44.6
 
+Set the following environment variables (signing credentials):
+- `KEYSTORE_PATH`
+- `KEY_ALIAS`
+- `KEY_PASSWORD`
+- `KEYSTORE_PASSWORD`
+
+Then run:
 > make build
+
+OR
+
+> flutter build apk --release --target-platform android-arm64 --obfuscate --split-debug-info=build/debug-info
+
+Output: `build/app/outputs/flutter-apk/app-release.apk` (arm64 only)
+
+___
+
+**Alternatively:**
+
+-Build an Android APK file
+> flutter build apk
+
+    Output: `build/app/outputs/flutter-apk/app-release.apk` (multi-arch)
+
+-Build an Android App File Bundle
+> flutter build appbundle
+
+    Output: `build/app/outputs/bundle/release/app-release.aab` (multi-arch)
 
 ## License
 
