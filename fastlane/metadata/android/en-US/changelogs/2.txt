@@ -1,0 +1,1 @@
+Disabled dependency metadata for APKs and App Bundles builds.
